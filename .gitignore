@@ -1,0 +1,9 @@
+Archivos y carpetas generados por la compilación
+/out/
+
+Archivos de configuración específicos de IntelliJ IDEA
+.idea/
+
+Archivos de sistema operativo
+
+.DS_Store
