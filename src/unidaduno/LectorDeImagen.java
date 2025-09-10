@@ -20,39 +20,25 @@ public class LectorDeImagen {
 
     public LectorDeImagen(String nombreArchivo) {
         this.nombreArchivo = nombreArchivo;
-
-        // SOLUCIÓN FINAL: Asegúrate de que esta línea solo contenga el nombre de la carpeta.
         path = "imagenes/" + this.nombreArchivo;
-
         System.out.println("Intentando cargar imagen desde: " + path);
         try {
             FileInputStream input = new FileInputStream(new File(path));
             laImagen = ImageIO.read(input);
-            colorModel = laImagen.getColorModel();
-            tipo = laImagen.getType();
+            if (laImagen != null) {
+                colorModel = laImagen.getColorModel();
+                tipo = laImagen.getType();
+            }
         } catch (IOException ioe) {
             System.err.println("Error al leer el archivo de imagen: " + ioe);
         }
     }
 
-    // ... el resto del código es el mismo ...
-
-    public BufferedImage getBufferedImage() {
-        return laImagen;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public String getNombreArchivo() {
-        return nombreArchivo;
-    }
-
+    // ... los métodos existentes no se modifican ...
+    public BufferedImage getBufferedImage() { return laImagen; }
+    public void setPath(String path) { this.path = path; }
+    public String getPath() { return path; }
+    public String getNombreArchivo() { return nombreArchivo; }
     public int[][] getImagenInt(int queColor) {
         int alto = laImagen.getHeight();
         int ancho = laImagen.getWidth();
@@ -64,17 +50,17 @@ public class LectorDeImagen {
             for (int x = 0; x < ancho; x++) {
                 pixel = laImagen.getRGB(x, y);
                 switch (queColor) {
-                    case 1: // rojo
+                    case 1:
                         int R = (pixel & 0x00ff0000) >> 16;
                         color = new Color(R, 0, 0);
                         imagenInt[y][x] = color.getRGB();
                         break;
-                    case 2: // verde
+                    case 2:
                         int G = (pixel & 0x0000ff00) >> 8;
                         color = new Color(0, G, 0);
                         imagenInt[y][x] = color.getRGB();
                         break;
-                    case 3: // azul
+                    case 3:
                         int B = pixel & 0x000000ff;
                         color = new Color(0, 0, B);
                         imagenInt[y][x] = color.getRGB();
@@ -95,7 +81,6 @@ public class LectorDeImagen {
         }
         return imagenInt;
     }
-
     public Image getImage(int queColor) {
         Image imagenLocal;
         int[][] imagenInt = getImagenInt(queColor);
@@ -105,7 +90,6 @@ public class LectorDeImagen {
         imagenLocal = frameTmp.createImage(new MemoryImageSource(ancho, alto, convertirInt2DAInt1D(imagenInt, ancho, alto), 0, ancho));
         return imagenLocal;
     }
-
     public int[] convertirInt2DAInt1D(int[][] matriz, int ancho, int alto) {
         int index = 0;
         int[] bufferInt = null;
@@ -116,21 +100,65 @@ public class LectorDeImagen {
                     bufferInt[index++] = matriz[y][x];
                 }
             }
-        } catch (NegativeArraySizeException e) {
-            System.out.println(" Error alto, ancho o ambos negativos" + "en convierteInt2DAInt1D(double[][])" + e);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            System.out.println(" Error desbordamiento en bufferInt" + "en " + e);
-        } catch (NullPointerException e) {
-            System.out.println(" Error bufferInt nulo" + " en convierteInt2DAInt1D(double[][]) " + e);
+        } catch (Exception e) {
+            System.out.println("Error en la conversión: " + e);
         }
         return bufferInt;
     }
-
-    public int getAlto() {
-        return laImagen.getHeight();
+    public int getAlto() { return laImagen.getHeight(); }
+    public int getAncho() { return laImagen.getWidth(); }
+    public Image modificarBrillo(int factor) {
+        if (laImagen == null) return null;
+        int ancho = laImagen.getWidth();
+        int alto = laImagen.getHeight();
+        BufferedImage imagenModificada = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_RGB);
+        for (int y = 0; y < alto; y++) {
+            for (int x = 0; x < ancho; x++) {
+                int pixel = laImagen.getRGB(x, y);
+                Color color = new Color(pixel);
+                int r = color.getRed() + factor;
+                int g = color.getGreen() + factor;
+                int b = color.getBlue() + factor;
+                r = Math.max(0, Math.min(255, r));
+                g = Math.max(0, Math.min(255, g));
+                b = Math.max(0, Math.min(255, b));
+                Color nuevoColor = new Color(r, g, b);
+                imagenModificada.setRGB(x, y, nuevoColor.getRGB());
+            }
+        }
+        return imagenModificada;
     }
 
-    public int getAncho() {
-        return laImagen.getWidth();
+    /**
+     * MÉTODO NUEVO: Modifica el contraste de la imagen en niveles de gris.
+     * @param factor Un valor double. >1 para más contraste, <1 para menos. 1 es sin cambios.
+     * @return Una nueva imagen en escala de grises con el contraste modificado.
+     */
+    public Image modificarContraste(double factor) {
+        if (laImagen == null) return null;
+
+        int ancho = laImagen.getWidth();
+        int alto = laImagen.getHeight();
+        BufferedImage imagenModificada = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_RGB);
+
+        for (int y = 0; y < alto; y++) {
+            for (int x = 0; x < ancho; x++) {
+                Color color = new Color(laImagen.getRGB(x, y));
+
+                // 1. Convertir a gris
+                int grisActual = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
+
+                // 2. Aplicar la fórmula de contraste
+                double nuevoGrisDouble = factor * (grisActual - 128) + 128;
+
+                // 3. Asegurar que el valor esté en el rango 0-255
+                int nuevoGrisInt = (int) Math.max(0, Math.min(255, nuevoGrisDouble));
+
+                // 4. Crear el nuevo color de gris y asignarlo
+                Color nuevoColorGris = new Color(nuevoGrisInt, nuevoGrisInt, nuevoGrisInt);
+                imagenModificada.setRGB(x, y, nuevoColorGris.getRGB());
+            }
+        }
+        return imagenModificada;
     }
 }

@@ -3,10 +3,6 @@ package control;
 import java.awt.Image;
 import unidaduno.LectorDeImagen;
 
-/**
- *
- * @author sdelaot
- */
 public class ControlImagen {
     private LectorDeImagen lector;
 
@@ -24,5 +20,18 @@ public class ControlImagen {
 
     public int getAncho() {
         return lector.getAncho();
+    }
+
+    public Image getImagenConBrillo(int factor) {
+        return lector.modificarBrillo(factor);
+    }
+
+    /**
+     * MÉTODO NUEVO: Solicita al lector la imagen con el contraste modificado.
+     * @param factor El factor de contraste a aplicar.
+     * @return La nueva imagen.
+     */
+    public Image getImagenConContraste(double factor) {
+        return lector.modificarContraste(factor);
     }
 }
