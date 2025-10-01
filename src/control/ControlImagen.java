@@ -6,32 +6,31 @@ import unidaduno.LectorDeImagen;
 public class ControlImagen {
     private LectorDeImagen lector;
 
-    public ControlImagen(String nombreArchivo) {
-        lector = new LectorDeImagen(nombreArchivo);
+    public ControlImagen(String rutaArchivo) {
+        this.lector = new LectorDeImagen(rutaArchivo);
     }
 
-    public Image getImagen(int cual) {
-        return lector.getImage(cual);
+    public boolean isImageLoaded() {
+        return lector.isImageLoaded();
     }
 
-    public int getAlto() {
-        return lector.getAlto();
+    public Image getImagenOriginal() {
+        return lector.getImagenOriginal();
     }
 
-    public int getAncho() {
-        return lector.getAncho();
+    public Image getImagenCanalesRGB() {
+        return lector.getImagenCanalesRGB();
     }
 
-    public Image getImagenConBrillo(int factor) {
-        return lector.modificarBrillo(factor);
+    public Image getImagenGris() {
+        return lector.getImagenGris();
     }
 
-    /**
-     * MÉTODO NUEVO: Solicita al lector la imagen con el contraste modificado.
-     * @param factor El factor de contraste a aplicar.
-     * @return La nueva imagen.
-     */
-    public Image getImagenConContraste(double factor) {
-        return lector.modificarContraste(factor);
+    public Image modificarBrillo(int factor, boolean esGris) {
+        return lector.modificarBrillo(factor, esGris);
+    }
+
+    public Image modificarContraste(double factor, boolean esColor) {
+        return lector.modificarContraste(factor, esColor);
     }
 }

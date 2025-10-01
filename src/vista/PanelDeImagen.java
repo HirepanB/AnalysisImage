@@ -1,7 +1,10 @@
 package vista;
 
+import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import javax.swing.JPanel;
 
 public class PanelDeImagen extends JPanel {
@@ -12,22 +15,34 @@ public class PanelDeImagen extends JPanel {
         this.imagen = img;
     }
 
+    // --- CAMBIO 1: Se anula el método getPreferredSize ---
+    // Le decimos al panel que su tamaño ideal es el tamaño real de la imagen.
+    // Esto es crucial para que el JScrollPane sepa cuándo mostrar las barras.
+    @Override
+    public Dimension getPreferredSize() {
+        if (imagen != null) {
+            return new Dimension(imagen.getWidth(this), imagen.getHeight(this));
+        }
+        // Si no hay imagen, usa un tamaño por defecto.
+        return new Dimension(200, 200);
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         if (this.imagen != null) {
-            // MEJORA: La imagen ahora se escala para ajustarse al tamaño del panel.
-            g.drawImage(this.imagen, 0, 0, getWidth(), getHeight(), this);
+            // --- CAMBIO 2: Se dibuja la imagen en su tamaño 1:1 ---
+            // Ya no se escala a getWidth() y getHeight(). Se dibuja en su tamaño natural.
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2d.drawImage(this.imagen, 0, 0, this);
         }
     }
 
-    /**
-     * MÉTODO NUEVO: Permite cambiar la imagen que se muestra en el panel.
-     * @param nuevaImagen La nueva imagen a mostrar.
-     */
     public void setImagen(Image nuevaImagen) {
         this.imagen = nuevaImagen;
-        // Forza al panel a redibujarse para mostrar la nueva imagen.
+        // Revalida el componente para que el JScrollPane ajuste las barras si es necesario.
+        revalidate();
         repaint();
     }
 }
